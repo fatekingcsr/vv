@@ -1,0 +1,11 @@
+# Generated APT metadata
+Packages
+Packages.xz
+Packages.bz2
+Release
+Release.gpg
+InRelease
+packages.json
+
+# macOS
+.DS_Store
