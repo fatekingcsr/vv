@@ -47,12 +47,17 @@ GH_CANDIDATES = [
 # --------------------------------------------------------------------------- #
 
 def run(cmd, **kw):
-    """执行命令，返回 (returncode, stdout+stderr)。"""
+    """执行命令，返回 (returncode, stdout+stderr)。超时/异常都当成失败返回，不抛出。"""
     if sys.platform == "win32":
         kw.setdefault("encoding", "utf-8")
         kw.setdefault("errors", "replace")
-    p = subprocess.run(cmd, capture_output=True, text=True, **kw)
-    return p.returncode, (p.stdout or "") + (p.stderr or "")
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True, **kw)
+        return p.returncode, (p.stdout or "") + (p.stderr or "")
+    except subprocess.TimeoutExpired:
+        return 1, f"(命令超过 {kw.get('timeout')} 秒未返回)"
+    except Exception as exc:  # noqa: BLE001
+        return 1, str(exc)
 
 
 def has_git() -> bool:
@@ -143,8 +148,31 @@ def commit_changes(message):
     return files
 
 
+def sync_with_remote():
+    """推送前先 fetch，如果远端有本地没有的提交（比如上次走 API 上传产生的），先 rebase 对齐。"""
+    code, _ = run(["git", "-C", str(ROOT), "fetch", "-q", "origin"], timeout=45)
+    if code != 0:
+        print("  · fetch 失败（github.com 不通），跳过对齐")
+        return False
+    code, behind = git("rev-list", "--count", "main..origin/main")
+    try:
+        n = int(behind or 0)
+    except ValueError:
+        n = 0
+    if n <= 0:
+        return True
+    code, out = run(["git", "-C", str(ROOT), "rebase", "origin/main"])
+    if code == 0:
+        print(f"  · 已 rebase 到 origin/main（远端有 {n} 个本地没有的提交）")
+        return True
+    run(["git", "-C", str(ROOT), "rebase", "--abort"])
+    print(f"  · rebase 失败，已回滚：{out.strip().splitlines()[:1]}")
+    return False
+
+
 def try_git_push(attempts=4, wait=4):
     """github.com:443 在国内会间歇性不通，多试几次。"""
+    sync_with_remote()
     for i in range(1, attempts + 1):
         code, out = run(["git", "-C", str(ROOT), "push", "origin", "main"],
                         env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
