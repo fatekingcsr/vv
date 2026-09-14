@@ -1,9 +1,16 @@
 {
-  "name": "VV",
-  "description": "VV Jailbreak Repository",
-  "url": "https://fatekingcsr.github.io/VV/",
-  "owner": {
-    "name": "fatekingcsr",
-    "email": ""
-  }
+  "origin": "vv",
+  "label": "vv",
+  "name": "vv",
+  "description": "vv 的越狱插件源 · Dopamine / palera1n rootless",
+  "maintainer": "fatekingcsr <fatekingcsr@users.noreply.github.com>",
+  "url": "https://fatekingcsr.github.io/vv/",
+  "icon": "CydiaIcon.png",
+  "accent": "#5b8cff",
+  "component": "main",
+  "codename": "ios",
+  "suite": "stable",
+  "version": "1.0",
+  "architectures": ["iphoneos-arm64", "iphoneos-arm"],
+  "featured": []
 }

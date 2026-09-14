@@ -1,0 +1,15 @@
+Package: com.wang.demo.tweak
+Name: Demo Tweak
+Version: 1.0.0
+Architecture: iphoneos-arm64
+Description: 演示插件（gen_repo.py --demo 生成）
+ 仅用于验证 Sileo 源链路，验证完可以删掉 debs/ 里的这个包。
+Section: Tweaks
+Depends: mobilesubstrate, firmware (>= 14.0)
+Maintainer: Wang <wang@example.com>
+Author: Wang
+Filename: ./debs/com.wang.demo.tweak_1.0.0_iphoneos-arm64.deb
+Size: 872
+MD5sum: a08115dbf262ac44b93eecb9ba68bfc4
+SHA256: ed2ad674398e8c8e04cabab5601e73cf9b9363d81880403489985c7f53744411
+Installed-Size: 1

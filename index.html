@@ -1,41 +1,298 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VV Jailbreak Repository</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vv · Sileo 软件源</title>
+<meta name="description" content="vv 的越狱插件源，可通过 Sileo 添加">
+<link rel="icon" href="CydiaIcon.png">
+<link rel="apple-touch-icon" href="CydiaIcon.png">
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:980px;margin:0 auto;padding:32px 18px;background:#f5f5f7;color:#111}
-.card{background:#fff;border-radius:18px;padding:22px;margin:16px 0;box-shadow:0 5px 20px #00000012}
-input{width:100%;box-sizing:border-box;padding:13px;border:1px solid #ddd;border-radius:12px;font-size:16px}
-.item{padding:14px 0;border-bottom:1px solid #eee}.item:last-child{border:0}
-a{color:#06c;text-decoration:none}.muted{color:#777}
-code{background:#eee;padding:3px 6px;border-radius:6px}
+  :root{
+    --bg:#f5f6fa; --panel:#ffffff; --panel-2:#fafbfd; --text:#14161b;
+    --muted:#6b7280; --line:#e6e8ef; --accent:#5b8cff; --radius:16px;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 8px 24px -12px rgba(16,24,40,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0d0f13; --panel:#161a20; --panel-2:#1b2027; --text:#eef1f6;
+      --muted:#98a2b3; --line:#252b34;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.8);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--text); min-height:100vh;
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC",
+         "Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:880px;margin:0 auto;padding:28px 20px 64px}
+
+  /* ---------- 头部 ---------- */
+  .hero{
+    position:relative;overflow:hidden;border-radius:var(--radius);
+    background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);
+    padding:26px 24px;display:flex;gap:18px;align-items:center;
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(520px 180px at 0% 0%, color-mix(in srgb,var(--accent) 22%, transparent), transparent 70%);
+  }
+  .icon{
+    width:76px;height:76px;border-radius:20px;flex:0 0 auto;
+    box-shadow:0 6px 20px -8px rgba(0,0,0,.5);position:relative;z-index:1;
+    background:var(--panel-2);
+  }
+  .hero h1{margin:0 0 4px;font-size:24px;letter-spacing:-.02em;position:relative;z-index:1}
+  .hero p{margin:0;color:var(--muted);font-size:13.5px;position:relative;z-index:1}
+  .badges{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;position:relative;z-index:1}
+  .badge{
+    font-size:11.5px;padding:3px 9px;border-radius:999px;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+  }
+  .badge.on{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%, var(--line))}
+
+  /* ---------- 源地址 ---------- */
+  .source{
+    margin-top:18px;border-radius:var(--radius);background:var(--panel);
+    border:1px solid var(--line);box-shadow:var(--shadow);padding:18px;
+  }
+  .label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+  .urlrow{display:flex;gap:8px;flex-wrap:wrap}
+  .url{
+    flex:1 1 260px;min-width:0;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    padding:11px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  button{
+    font:inherit;font-size:13.5px;cursor:pointer;border-radius:10px;padding:11px 18px;
+    border:1px solid var(--line);background:var(--panel-2);color:var(--text);
+    transition:.15s transform,.15s opacity;white-space:nowrap;
+  }
+  button:hover{transform:translateY(-1px)}
+  button.primary{
+    background:var(--accent);border-color:transparent;color:#fff;font-weight:600;
+    box-shadow:0 6px 18px -8px color-mix(in srgb,var(--accent) 80%, transparent);
+  }
+  .warn{
+    margin-top:12px;font-size:13px;padding:10px 12px;border-radius:10px;
+    background:color-mix(in srgb,#f59e0b 14%, transparent);
+    border:1px solid color-mix(in srgb,#f59e0b 34%, transparent);
+    color:color-mix(in srgb,#f59e0b 55%, var(--text));
+  }
+  .hint{margin-top:12px;font-size:12.5px;color:var(--muted)}
+  .hint code{
+    font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--panel-2);
+    border:1px solid var(--line);border-radius:6px;padding:1px 6px;
+  }
+
+  /* ---------- 工具条 ---------- */
+  .toolbar{display:flex;gap:10px;align-items:center;margin:26px 0 14px;flex-wrap:wrap}
+  .toolbar h2{margin:0;font-size:16px;letter-spacing:-.01em}
+  .count{font-size:12.5px;color:var(--muted)}
+  #search{
+    margin-left:auto;font:inherit;font-size:13.5px;padding:9px 13px;min-width:190px;
+    border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);
+  }
+  #search:focus{outline:none;border-color:var(--accent)}
+
+  /* ---------- 插件卡片 ---------- */
+  .list{display:flex;flex-direction:column;gap:12px}
+  .pkg{
+    display:flex;gap:14px;padding:16px;border-radius:var(--radius);
+    background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);
+  }
+  .pkg .ico{
+    width:52px;height:52px;border-radius:13px;flex:0 0 auto;object-fit:cover;
+    background:var(--panel-2);border:1px solid var(--line);
+  }
+  .pkg .body{min-width:0;flex:1}
+  .pkg h3{margin:0;font-size:15.5px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .pkg .ver{font-size:12px;color:var(--muted);font-weight:400}
+  .pkg .id{
+    font:11.5px ui-monospace,Menlo,Consolas,monospace;color:var(--muted);
+    margin-top:2px;word-break:break-all;
+  }
+  .pkg .desc{margin:8px 0 0;font-size:13.5px;color:var(--muted);white-space:pre-line}
+  .pkg .meta{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+  .empty{
+    text-align:center;padding:52px 20px;color:var(--muted);border-radius:var(--radius);
+    background:var(--panel);border:1px dashed var(--line);font-size:14px;
+  }
+  .empty b{color:var(--text);display:block;margin-bottom:6px;font-size:15px}
+  footer{margin-top:36px;text-align:center;font-size:12.5px;color:var(--muted)}
+
+  #toast{
+    position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);
+    background:var(--text);color:var(--bg);font-size:13.5px;font-weight:500;
+    padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.22s;
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
-<div class="card">
-<h1>VV Jailbreak Repository</h1>
-<p class="muted">APT repository for iOS jailbreak packages.</p>
-<p><code>https://fatekingcsr.github.io/VV/</code></p>
-<input id="q" placeholder="Search packages..." oninput="render()">
+<div class="wrap">
+
+  <header class="hero">
+    <img class="icon" id="repoIcon" src="CydiaIcon.png" alt="">
+    <div>
+      <h1 id="repoName">加载中…</h1>
+      <p id="repoDesc"></p>
+      <div class="badges" id="repoBadges"></div>
+    </div>
+  </header>
+
+  <section class="source">
+    <div class="label">Sileo 源地址</div>
+    <div class="urlrow">
+      <div class="url" id="repoUrl">—</div>
+      <button class="primary" id="btnSileo">添加到 Sileo</button>
+      <button id="btnCopy">复制地址</button>
+    </div>
+    <div class="warn" id="warn" hidden>
+      当前 <code>repo.json</code> 里的 <code>url</code> 还是占位地址，Sileo 无法访问。
+      部署到真实域名后请改成最终地址，再运行 <code>python tools/gen_repo.py</code>。
+    </div>
+    <div class="hint">
+      手动添加：Sileo → 软件源 → 右上角 <b>+</b> → 粘贴上面的地址 → 添加。
+      URL 必须以 <code>/</code> 结尾，并且建议使用 HTTPS。
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <h2>插件列表</h2>
+    <span class="count" id="count"></span>
+    <input id="search" type="search" placeholder="搜索插件 / 包名…">
+  </div>
+
+  <div class="list" id="list"></div>
+  <div class="empty" id="empty" hidden>
+    <b>源里还没有插件</b>
+    把编译好的 .deb 放进 <code>debs/</code>，然后运行 <code>python tools/gen_repo.py</code>
+  </div>
+
+  <footer id="foot"></footer>
 </div>
-<div class="card"><div id="list">Loading...</div></div>
+<div id="toast"></div>
+
+<!-- gen_repo.py 生成的内联数据；用 script 标签引入，file:// 直接打开也能正常显示 -->
+<script src="repo-data.js"></script>
 <script>
-let data=[];
-fetch('./packages.json').then(r=>r.json()).then(x=>{data=x;render()}).catch(()=>document.getElementById('list').textContent='No package catalog yet.');
-function render(){
- const q=(document.getElementById('q').value||'').toLowerCase();
- const out=data.filter(p=>(p.name+' '+p.package+' '+p.description).toLowerCase().includes(q));
- document.getElementById('list').innerHTML=out.length?out.map(p=>`
- <div class="item">
- <h3>${esc(p.name||p.package)}</h3>
- <div>Version: ${esc(p.version||'')} · Architecture: ${esc(p.architecture||'')}</div>
- <p class="muted">${esc(p.description||'')}</p>
- ${p.filename?`<a href="${esc(p.filename)}">Download .deb</a>`:''}
- </div>`).join(''):'No packages found.';
+const FALLBACK = {name:'Sileo Repo', origin:'Sileo Repo', description:'', url:'',
+                  maintainer:'', accent:'#5b8cff', architectures:[], packages:[]};
+let REPO = null;
+
+/* ---------- 数据加载：优先使用 gen_repo.py 生成的内联数据 ---------- */
+function loadRepo(done){
+  if (window.SILEO_REPO) return done(window.SILEO_REPO);
+  fetch('repo-data.js').then(r => r.text()).then(txt => {
+    // file:// 下 script 标签才会执行，这里兜底把赋值语句跑一遍
+    new Function(txt)();
+    done(window.SILEO_REPO || FALLBACK);
+  }).catch(() => fetch('packages.json').then(r => r.json()).then(done)
+                       .catch(() => done(FALLBACK)));
 }
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function fmtSize(bytes){
+  if (!bytes) return '';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(2) + ' MB';
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function isPlaceholder(u){ return /example\.(com|org)|your-username|your-domain|localhost|127\.0\.0\.1/i.test(u || ''); }
+
+function render(){
+  const cfg = REPO || FALLBACK;
+  const pkgs = cfg.packages || [];
+
+  document.title = (cfg.name || cfg.origin) + ' · Sileo 软件源';
+  document.documentElement.style.setProperty('--accent', cfg.accent || '#5b8cff');
+  document.getElementById('repoIcon').src = cfg.icon || 'CydiaIcon.png';
+  document.getElementById('repoName').textContent = cfg.name || cfg.origin || 'Sileo Repo';
+  document.getElementById('repoDesc').textContent = cfg.description || '';
+
+  const badges = [];
+  if (cfg.maintainer) badges.push(cfg.maintainer.split('<')[0].trim());
+  (cfg.architectures || []).forEach(a => badges.push(a));
+  badges.push(pkgs.length + ' 个插件');
+  document.getElementById('repoBadges').innerHTML = badges
+    .map((b,i) => `<span class="badge${i===badges.length-1?' on':''}">${esc(b)}</span>`).join('');
+
+  const url = cfg.url || '';
+  document.getElementById('repoUrl').textContent = url || '（未设置）';
+  document.getElementById('warn').hidden = !isPlaceholder(url);
+
+  document.getElementById('count').textContent = pkgs.length ? `共 ${pkgs.length} 个` : '';
+  document.getElementById('foot').innerHTML =
+    `Generated by <code>tools/gen_repo.py</code>${cfg.generated ? ' · ' + esc(cfg.generated) : ''}`;
+
+  const empty = document.getElementById('empty');
+  empty.hidden = pkgs.length > 0;
+  draw(pkgs, '');
+}
+
+function draw(pkgs, kw){
+  const list = document.getElementById('list');
+  const q = kw.trim().toLowerCase();
+  const rows = !q ? pkgs : pkgs.filter(p =>
+    [p.name, p.id, p.description, p.section, p.author].join(' ').toLowerCase().includes(q));
+
+  document.getElementById('empty').hidden = rows.length > 0 || pkgs.length > 0;
+  if (!rows.length){ list.innerHTML = q ? '<div class="empty">没有匹配的插件</div>' : ''; return; }
+
+  list.innerHTML = rows.map(p => `
+    <article class="pkg">
+      <img class="ico" src="${esc(p.icon || REPO.icon || 'CydiaIcon.png')}" alt="" loading="lazy">
+      <div class="body">
+        <h3>${esc(p.name)} <span class="ver">v${esc(p.version)}</span></h3>
+        <div class="id">${esc(p.id)}</div>
+        ${p.description ? `<p class="desc">${esc(p.description)}</p>` : ''}
+        <div class="meta">
+          <span class="badge">${esc(p.section || 'Tweaks')}</span>
+          <span class="badge">${esc(p.architecture || '')}</span>
+          ${p.size ? `<span class="badge">${fmtSize(p.size)}</span>` : ''}
+          ${p.author ? `<span class="badge">${esc(p.author.split('<')[0].trim())}</span>` : ''}
+        </div>
+      </div>
+    </article>`).join('');
+}
+
+/* ---------- 交互 ---------- */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800);
+}
+function copy(text){
+  if (!text) return toast('还没有设置源地址');
+  const ok = () => toast('已复制源地址');
+  if (navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(ok).catch(() => legacy(text, ok));
+  } else legacy(text, ok);
+}
+function legacy(text, cb){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); cb(); } catch(e){ toast('复制失败，请手动选择'); }
+  document.body.removeChild(ta);
+}
+
+document.getElementById('btnCopy').addEventListener('click', () => copy((REPO||{}).url));
+document.getElementById('btnSileo').addEventListener('click', () => {
+  const url = (REPO || {}).url;
+  if (!url || isPlaceholder(url)) return toast('请先在 repo.json 里填真实源地址');
+  // Sileo 的 URL scheme：sileo://source/<源地址>
+  location.href = 'sileo://source/' + encodeURIComponent(url);
+});
+document.getElementById('search').addEventListener('input', e =>
+  draw((REPO || {}).packages || [], e.target.value));
+
+loadRepo(cfg => { REPO = Object.assign({}, FALLBACK, cfg); render(); });
 </script>
 </body>
 </html>

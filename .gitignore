@@ -1,11 +1,18 @@
-# Generated APT metadata
-Packages
-Packages.xz
-Packages.bz2
-Release
-Release.gpg
-InRelease
-packages.json
+# ⚠️ 千万不要忽略这些文件！它们是 Sileo 源的索引本体
+#（之前这版把 Packages/Release 忽略了，导致源完全打不开）
+!Packages
+!Packages.gz
+!Packages.bz2
+!Release
+!packages.json
+!repo-data.js
+!sileo-featured.json
 
-# macOS
+# 真正的垃圾
 .DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+_extract/
+_site/
+.jekyll-cache/

@@ -1,0 +1,14 @@
+# 全部按 LF 处理，禁止 Windows 把索引文件转成 CRLF。
+# 否则 Release 里的 MD5/SHA256 会和服务端实际内容对不上，Sileo 报 hash mismatch。
+* text=auto eol=lf
+
+# 二进制文件，保持原样
+*.png  binary
+*.jpg  binary
+*.ico  binary
+*.deb  binary
+*.gz   binary
+*.bz2  binary
+*.xz   binary
+*.zst  binary
+*.zip  binary

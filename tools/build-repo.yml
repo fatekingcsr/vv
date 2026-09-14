@@ -1,0 +1,46 @@
+name: Build Sileo Repo Index
+
+# 只要 debs/ 里新增或删除了 .deb，或者改了配置，就自动重建索引并提交回去。
+# 这样你本地只要把包丢进 debs/ 推上来，Sileo 源就自动更新了。
+
+on:
+  push:
+    paths:
+      - 'debs/**'
+      - 'repo.json'
+      - 'tools/gen_repo.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-sileo-repo
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 重建索引
+        run: python3 tools/gen_repo.py
+
+      - name: 有变化就提交
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for f in Packages Packages.gz Packages.bz2 Release packages.json repo-data.js CydiaIcon.png sileo-featured.json; do
+            [ -f "$f" ] && git add "$f"
+          done
+          if git diff --staged --quiet; then
+            echo "索引没有变化，跳过提交"
+          else
+            git commit -m "chore: 重建源索引 [skip ci]"
+            git push
+          fi
