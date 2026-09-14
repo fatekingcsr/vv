@@ -25,7 +25,8 @@ vv/                                ← 这个目录 = GitHub 仓库根目录
 │   └── com.wang.demo.tweak_1.0.0_iphoneos-arm64.deb   （示例包，随时可删）
 ├── tools/
 │   ├── gen_repo.py                ← 索引生成器
-│   └── build-repo.yml             ← 自动重建工作流（见下方「方式 B」）
+│   ├── publish.py                 ← ★ 一键发布插件（复制 deb + 重建索引 + 推送）
+│   └── build-repo.yml             ← 自动重建工作流（见下方「方式 C」）
 ├── .gitattributes                 ← 强制 LF，防止 CRLF 弄坏校验和
 ├── .gitignore                     ← 注意：**不要**忽略 Packages / Release
 └── .nojekyll                      ← 必须，关掉 Jekyll
@@ -35,19 +36,40 @@ vv/                                ← 这个目录 = GitHub 仓库根目录
 
 ## 以后加新插件
 
-### 方式 A：手动（最稳，推荐）
+### 方式 A：一条命令（推荐 ⭐）
 
 ```bash
-cp 新插件.deb debs/            # 把编译好的 deb 丢进 debs/
-python tools/gen_repo.py       # 重建索引
-git add -A
-git commit -m "add: 新插件 v1.1.0"
-git push
+python tools/publish.py 你的新插件.deb
 ```
 
-推送后等 1～2 分钟 Pages 重新部署完，手机上打开 Sileo 下拉刷新即可看到新版。
+就这一条。它会自动完成：
 
-### 方式 B：全自动（需要先启用一次）
+1. 把 `.deb` 复制进 `debs/`
+2. 重建全部索引（`Packages` / `.gz` / `.bz2` / `Release` / `repo-data.js` / `packages.json`）
+3. `git add` + `commit` + `push`
+4. **如果 `github.com:443` 又抽风推不上去，自动改用 `api.github.com` 的 Contents API 上传**（国内很稳）
+
+其他用法：
+
+```bash
+python tools/publish.py                          # 没有新包，只重建索引并发布
+python tools/publish.py a.deb b.deb              # 一次加多个
+python tools/publish.py --remove 老插件.deb      # 移除某个包（从 debs/ 删掉）再发布
+python tools/publish.py --dry-run 新插件.deb     # 只改本地不推送，先看看效果
+python tools/publish.py --api 新插件.deb         # 强制走 API 上传，跳过 git push
+```
+
+发布完成后等 1～2 分钟 Pages 部署完，手机上打开 Sileo 下拉刷新即可看到新版。
+
+### 方式 B：手动 git
+
+```bash
+cp 新插件.deb debs/
+python tools/gen_repo.py
+git add -A && git commit -m "add: 新插件 v1.1.0" && git push
+```
+
+### 方式 C：全自动（需要先启用一次）
 
 仓库里已经准备好了工作流，但**因为当前 GitHub 登录凭据缺少 `workflow` 权限，没能自动放到位**。
 启用方法（二选一）：
@@ -56,10 +78,26 @@ git push
   文件名填 `.github/workflows/build-repo.yml`，把 `tools/build-repo.yml` 的内容整段粘进去，提交。
 - **命令行**：在电脑上跑 `gh auth refresh -h github.com -s workflow` 授权后告诉我，我帮你放好。
 
-启用后，以后只要 push 到 `debs/`，GitHub 就会自动重建索引并提交回来。
+启用后，以后只要 push 到 `debs/`，GitHub 就会自动重建索引并提交回来（适合你在别的机器上直接传文件）。
 
 > 首次运行若报 `permission denied`：**Settings → Actions → General → Workflow permissions**
 > 选 **Read and write permissions**，再重跑一次工作流。
+
+### 发布前的自检清单
+
+```bash
+# 1. deb 的架构要和你的设备对得上（rootless 是 iphoneos-arm64）
+python tools/gen_repo.py | grep -i architecture
+
+# 2. 索引里的包名/版本对了吗
+grep -E "^(Package|Version|Architecture):" Packages
+
+# 3. 发布完确认线上生效
+curl -s https://fatekingcsr.github.io/vv/Packages | grep -E "^(Package|Version):"
+```
+
+> ⚠️ Theos 打包 rootless 插件时记得 `THEOS_PACKAGE_SCHEME = rootless`，
+> 否则 `Architecture` 会是 `iphoneos-arm`，Dopamine 设备上 Sileo 不显示这个包。
 
 ---
 
@@ -91,8 +129,13 @@ git push
 - ❌ 缺 `Release` 文件 → Sileo 直接不认这个源。
 - ❌ Windows 上 `Path.write_text` 会把 `\n` 写成 `\r\n`，导致 `Release` 里的校验和与实际文件不符
   → 已用 `.gitattributes` + 脚本内 bytes 写入修掉。
+- ❌ `gzip.compress(data, 9)` 在 Python 3.11+ 会把**当前时间**写进 gzip 头，导致同样的索引每次
+  生成的 `Packages.gz` 字节都不同 → 自动构建永远判定"有变化"，无限提交。
+  → 已改成 `gzip.compress(raw, 9, mtime=0)`。
 - ❌ Pages 的 `build_type` 被设成 `workflow`（靠 Actions 发布）但工作流是废的 → 站点永远 404。
   正确做法是 **Deploy from a branch → main → /(root)**。
+- ❌ `github.com:443` 在国内会间歇性断连（`Recv failure: Connection was reset`），
+  但 `api.github.com` 一直通 → `tools/publish.py` 已内置 API 兜底上传。
 
 ---
 
