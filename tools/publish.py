@@ -149,21 +149,34 @@ def commit_changes(message):
 
 
 def sync_with_remote():
-    """推送前先 fetch，如果远端有本地没有的提交（比如上次走 API 上传产生的），先 rebase 对齐。"""
+    """推送前先 fetch 对齐远端。
+
+    走 API 兜底上传时，远端会凭空多出若干提交，本地历史随之分叉。
+    这里做两级收敛：
+      1. 若工作区内容与远端完全一致 → 直接 reset --hard 采用远端历史（最干净、不会冲突）
+      2. 否则若落后 → rebase 到 origin/main
+    """
     code, _ = run(["git", "-C", str(ROOT), "fetch", "-q", "origin"], timeout=45)
     if code != 0:
         print("  · fetch 失败（github.com 不通），跳过对齐")
         return False
+
+    code, diff = git("diff", "--name-only", "origin/main")
     code, behind = git("rev-list", "--count", "main..origin/main")
-    try:
-        n = int(behind or 0)
-    except ValueError:
-        n = 0
-    if n <= 0:
+    n_behind = int(behind or 0) if behind.strip().isdigit() else 0
+
+    if not diff:
+        if n_behind:
+            git("reset", "--hard", "origin/main")
+            print(f"  · 内容已与远端一致，对齐历史（丢弃 {n_behind} 个内容重复的本地提交）")
         return True
+
+    if not n_behind:
+        return True
+
     code, out = run(["git", "-C", str(ROOT), "rebase", "origin/main"])
     if code == 0:
-        print(f"  · 已 rebase 到 origin/main（远端有 {n} 个本地没有的提交）")
+        print(f"  · 已 rebase 到 origin/main（远端有 {n_behind} 个新提交）")
         return True
     run(["git", "-C", str(ROOT), "rebase", "--abort"])
     print(f"  · rebase 失败，已回滚：{out.strip().splitlines()[:1]}")
