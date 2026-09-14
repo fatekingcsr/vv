@@ -255,7 +255,9 @@ def build_index(config: dict):
 def write_packages(entries) -> dict:
     text = "\n\n".join(entries) + ("\n" if entries else "")
     raw = text.encode("utf-8")
-    gz = gzip.compress(raw, 9)
+    # mtime=0：否则 gzip 头里会写入「当前时间」，导致每次生成的 Packages.gz 字节都不同，
+    # 索引永远被判为「有变化」，Actions 会无限提交。bz2 本身是确定性的。
+    gz = gzip.compress(raw, 9, mtime=0)
     bz = bz2.compress(raw, 9)
 
     (ROOT / "Packages").write_bytes(raw)
