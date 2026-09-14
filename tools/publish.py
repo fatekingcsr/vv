@@ -170,12 +170,25 @@ def sync_with_remote():
     return False
 
 
-def try_git_push(attempts=4, wait=4):
+def port_open(host="github.com", port=443, timeout=3.0):
+    """快速探测 github.com:443 是否可达，避免明知不通还傻等 4 次 push 重试。"""
+    import socket
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def try_git_push(attempts=3, wait=3):
     """github.com:443 在国内会间歇性不通，多试几次。"""
+    if not port_open():
+        print("  · github.com:443 无法连接，跳过 git push，直接走 API")
+        return False, "github.com:443 不可达"
     sync_with_remote()
     for i in range(1, attempts + 1):
         code, out = run(["git", "-C", str(ROOT), "push", "origin", "main"],
-                        env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
+                        env={**os.environ, "GIT_TERMINAL_PROMPT": "0"}, timeout=90)
         if code == 0:
             return True, f"git push 成功（第 {i} 次尝试）"
         last = out.strip().splitlines()[-1] if out.strip() else "(无输出)"
